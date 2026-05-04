@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>岩手県AEDマップ（最寄りナビ搭載版）</title>
+    <!-- LeafletのCSS -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <!-- 💡 ここでさっき作った style.css を読み込む！ -->
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <div id="ui-panel">
+        <h2 style="margin: 0 0 10px 0; font-size: 18px">🚑 岩手県AEDマップ</h2>
+
+        <button
+          class="emergency-btn"
+          @click="findNearestAED"
+          :disabled="isSearching"
+        >
+          {{ isSearching ? '⏳ 検索中...' : '📍 現在地から一番近いAEDを探す' }}
+        </button>
+
+        <div style="margin-bottom: 15px">
+          <label for="city-select" style="font-size: 14px; color: #555"
+            ><b>エリアを選択:</b></label
+          >
+          <select id="city-select" v-model="selectedCity" @change="updateMap">
+            <option v-for="city in cityList" :key="city" :value="city">
+              {{ city }}
+            </option>
+          </select>
+        </div>
+
+        <p style="margin: 0; font-size: 14px">
+          表示件数：<b style="font-size: 18px; color: #0056b3"
+            >{{ aedCount }}</b
+          >
+          件
+        </p>
+
+        <p
+          style="
+            margin: 10px 0 0 0;
+            font-size: 11px;
+            color: #666;
+            line-height: 1.4;
+          "
+        >
+          ※本マップは各自治体のオープンデータを統合したものです。<br />
+          ※実用性向上のため、元データの明らかな座標エラー等は独自に補正・クレンジングを行って掲載しています。
+        </p>
+
+        <!-- SNSシェアボタンエリア -->
+        <div
+          style="
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+          "
+        >
+          <p
+            style="
+              margin: 0 0 10px 0;
+              font-size: 13px;
+              font-weight: bold;
+              color: #555;
+            "
+          >
+            共有する：
+          </p>
+          <div style="display: flex; gap: 10px">
+            <button
+              @click="shareOnX"
+              style="
+                flex: 1;
+                padding: 8px;
+                background-color: #000;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 13px;
+              "
+            >
+              𝕏 でポスト
+            </button>
+            <button
+              @click="shareOnLine"
+              style="
+                flex: 1;
+                padding: 8px;
+                background-color: #06c755;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 13px;
+              "
+            >
+              LINE で送る
+            </button>
+          </div>
+        </div>
+
+        <!-- ℹ️ アプリについてのボタン -->
+        <button
+          @click="showModal = true"
+          style="
+            width: 100%;
+            margin-top: 15px;
+            padding: 8px;
+            background: #eee;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+            color: #333;
+          "
+        >
+          ℹ️ このアプリについて（出典・開発者）
+        </button>
+      </div>
+
+      <!-- モーダルウィンドウ -->
+      <div
+        class="modal-overlay"
+        v-if="showModal"
+        @click.self="showModal = false"
+      >
+        <div class="modal-content">
+          <h3 style="margin-top: 0; color: #333">🚑 岩手県広域AEDマップ</h3>
+          <p style="font-size: 13px; color: #555; line-height: 1.5">
+            本アプリは、岩手県内各市町村が公開しているAED設置場所のオープンデータを独自に統合し、現在地からのルート検索機能を付加した非公式アプリです。
+          </p>
+          <h4
+            style="
+              margin: 15px 0 5px 0;
+              border-bottom: 1px solid #ccc;
+              padding-bottom: 3px;
+            "
+          >
+            📊 データ出典・ライセンス
+          </h4>
+          <p
+            style="
+              font-size: 12px;
+              color: #444;
+              line-height: 1.5;
+              margin-top: 5px;
+            "
+          >
+            ・出典：各市町村オープンデータカタログサイト等<br />
+            ・ライセンス：クリエイティブ・コモンズ 表示 4.0 国際<br />
+            <strong style="color: #d32f2f">※重要：</strong
+            >元データに存在した明らかな座標エラー（他県や海上を指す座標等）については、実用性確保のため開発者側で独自に補正・クレンジングを行って掲載しています。
+          </p>
+          <h4
+            style="
+              margin: 15px 0 5px 0;
+              border-bottom: 1px solid #ccc;
+              padding-bottom: 3px;
+            "
+          >
+            💻 開発者情報
+          </h4>
+          <p
+            style="
+              font-size: 12px;
+              color: #444;
+              line-height: 1.5;
+              margin-top: 5px;
+            "
+          >
+            開発・運営：行政書士渋谷悠希事務所<br />
+            本アプリへのご意見・お問い合わせは、開発者のWebサイトまたはSNSまでお願いいたします。
+          </p>
+          <div style="text-align: right; margin-top: 20px">
+            <button class="close-btn" @click="showModal = false">閉じる</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- 💡 ここでさっき作った app.js を読み込む！ -->
+    <script src="app.js"></script>
+  </body>
+</html>

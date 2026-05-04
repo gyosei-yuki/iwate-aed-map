@@ -1,0 +1,84 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+  background: #f0f0f0;
+}
+#map {
+  height: 100vh;
+  width: 100vw;
+  z-index: 1;
+}
+#ui-panel {
+  position: absolute;
+  top: 15px;
+  left: 50px;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  min-width: 220px;
+}
+select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  font-size: 16px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+.emergency-btn {
+  width: 100%;
+  padding: 12px;
+  margin-top: 15px;
+  margin-bottom: 15px;
+  background-color: #d32f2f;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(211, 47, 47, 0.4);
+  transition: background-color 0.2s;
+}
+.emergency-btn:hover {
+  background-color: #b71c1c;
+}
+.emergency-btn:disabled {
+  background-color: #9e9e9e;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 400px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+.close-btn {
+  background: #333;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+.close-btn:hover {
+  background: #555;
+}
